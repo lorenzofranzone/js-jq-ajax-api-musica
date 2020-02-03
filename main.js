@@ -1,50 +1,67 @@
-// Api di Boolean... dischi musicali.
-// Servendoci di handlebars stampiamo tutto a schermo.
-// Creare una select con i seguenti generi: pop, rock, metal e jazz.
-// In base a cosa scegliamo nella select vedremo i corrispondenti cd.
-// Chiamata: https://flynn.boolean.careers/exercises/api/array/music
+$(document).ready(function() {
 
-$(document).ready(function(){
-
-  // Code
-
-  var url = "https://flynn.boolean.careers/exercises/api/array/music";
-
-  // Chiamata Ajax
-  $.ajax(
-    {
-      url: url,
-      method: "GET",
-      // SUCCESS
-      success: function (data) {
-        // console.log(data);
-        processData(data.response);
-      },
-      // ERROR
-      error: function () {
-        alert("E' avvenuto un errore.");
+  // ALL ALBUM DEFAULT
+  $.ajax({
+    url: "https://flynn.boolean.careers/exercises/api/array/music",
+    method: "GET",
+    success: function(data, state) {
+      var arrayAlbum = data.response;
+      for (var i = 0; i < arrayAlbum.length; i++) {
+        var album = arrayAlbum[i];
+        // HANDLEBARS
+        var source = $('#entry-template').html();
+        var template = Handlebars.compile(source);
+        var context = album;
+        var html = template(context);
+        $('.cds-container').append(html);
       }
+    },
+    error: function(request, state, error) {
+      console.log(error);
     }
-  );
+  });
 
+  ////////////////////
+  // FILTER
+  ////////////////////
 
-  //////////////////////////////////////////////////
-  // F U N C T I O N S
-  //////////////////////////////////////////////////
+  // FILTER GENRE OPTION VALUE
+  var genre = $('.filter .filter-genre').val();
 
-  function processData(album) {
-    for (var i = 0; i < album.length; i++) {
-      var singleAlbum = album[i];
-      // console.log(singleAlbum);
-      var source = $("#entry-template").html();
-      var template = Handlebars.compile(source);
-      var html = template(singleAlbum);
-      $('.cds-container').append(html);
-    }
-  }
+  // CHANGE ALBUM FROM GENRE FILTER VALUE
+  $(document).on('change', '.filter .filter-genre', function() {
+    genre = $(this).val();
 
+    $.ajax({
+      url: "https://flynn.boolean.careers/exercises/api/array/music",
+      method: "GET",
+      success: function(data, state) {
+        $('.cds-container.container').text('');
+        var arrayAlbum = data.response;
+        for (var i = 0; i < arrayAlbum.length; i++) {
+          var album = arrayAlbum[i];
+          // HANDLEBARS
+          var source = $('#entry-template').html();
+          var template = Handlebars.compile(source);
+          // SHOW ALBUMS MATCHING GENRE
+          if (album.genre === genre) {
+            var context = album;
+            var html = template(context);
+            $('.cds-container').append(html);
+          }
+          // ELSE ALL DEFAULT
+          else if (genre === 'all') {
+            var context = album;
+            var html = template(context);
+            $('.cds-container').append(html);
+          }
+        }
+      },
+      error: function(request, state, error) {
+        console.log(error);
+      }
+    });
 
+  });
 
-
-//////////
 });
